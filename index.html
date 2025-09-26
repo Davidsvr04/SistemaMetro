@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Metro Medellín - Calculador de Rutas</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <i class="fas fa-subway"></i>
+                <h1>Metro Medellín - Sistema de Rutas Inteligente</h1>
+                <p>Calculador de rutas óptimas con algoritmo de Dijkstra</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="controls-panel">
+                <div class="route-selector">
+                    <h2><i class="fas fa-route"></i> Planificar Ruta</h2>
+                    
+                    <div class="input-group">
+                        <label for="origen">
+                            <i class="fas fa-map-marker-alt origin-icon"></i>
+                            Estación de Origen
+                        </label>
+                        <select id="origen" class="station-select">
+                            <option value="">Seleccione estación de origen</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="destino">
+                            <i class="fas fa-map-marker-alt destination-icon"></i>
+                            Estación de Destino
+                        </label>
+                        <select id="destino" class="station-select">
+                            <option value="">Seleccione estación de destino</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="criterio">
+                            <i class="fas fa-sliders-h"></i>
+                            Criterio de Optimización
+                        </label>
+                        <select id="criterio" class="station-select">
+                            <option value="tiempo">Menor Tiempo</option>
+                            <option value="transbordos">Menos Transbordos</option>
+                            <option value="costo">Menor Costo</option>
+                        </select>
+                    </div>
+
+                    <button id="calcularRuta" class="calculate-btn">
+                        <i class="fas fa-calculator"></i>
+                        Calcular Ruta Óptima
+                    </button>
+
+                    <button id="limpiarRuta" class="clear-btn" style="display: none;">
+                        <i class="fas fa-eraser"></i>
+                        Limpiar Ruta
+                    </button>
+                </div>
+
+                <div class="disruptions-panel">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Eventos Disruptivos</h3>
+                    <div class="disruption-controls">
+                        <label for="estacionCerrada">Estación Cerrada:</label>
+                        <select id="estacionCerrada" class="station-select">
+                            <option value="">Sin interrupciones</option>
+                        </select>
+                        
+                        <label for="factorRetraso">Factor de Retraso:</label>
+                        <select id="factorRetraso" class="station-select">
+                            <option value="1">Normal (1x)</option>
+                            <option value="1.5">Lluvia Moderada (1.5x)</option>
+                            <option value="2">Lluvia Intensa (2x)</option>
+                            <option value="2.5">Mantenimiento (2.5x)</option>
+                        </select>
+
+                        <button id="aplicarDisrupciones" class="disruption-btn">
+                            <i class="fas fa-cog"></i>
+                            Aplicar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div id="routeResults" class="route-results hidden">
+                    <h2><i class="fas fa-directions"></i> Resultado de la Ruta</h2>
+                    <div id="routeInfo" class="route-info"></div>
+                    <div id="routePath" class="route-path"></div>
+                    <div id="routeStats" class="route-stats"></div>
+                </div>
+
+                <div class="network-visualization">
+                    <h2><i class="fas fa-project-diagram"></i> Red de Transporte</h2>
+                    <div id="networkGraph" class="network-graph">
+                        <svg id="metroSvg" width="100%" height="900">
+                            <!-- El grafo se generará dinámicamente -->
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div class="legend">
+            <h3><i class="fas fa-info-circle"></i> Leyenda de Líneas</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color linea-a"></span>
+                    <span>Línea A (Metro)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-b"></span>
+                    <span>Línea B (Metro)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-1"></span>
+                    <span>Línea 1 (Bus)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-2"></span>
+                    <span>Línea 2 (Bus)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-p"></span>
+                    <span>Línea P (MetroCable)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-j"></span>
+                    <span>Línea J (MetroCable)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-k"></span>
+                    <span>Línea K (MetroCable)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-m"></span>
+                    <span>Línea M (MetroCable)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-h"></span>
+                    <span>Línea H (MetroCable)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color linea-t"></span>
+                    <span>Línea T (Tranvía)</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>© 2025 Sistema Metro Medellín - Proyecto Universitario | Algoritmos de Grafos y Dijkstra</p>
+        </footer>
+    </div>
+
+    <script src="metroData.js"></script>
+    <script src="dijkstra.js"></script>
+    <script src="visualization.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
