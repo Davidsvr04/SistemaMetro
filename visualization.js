@@ -57,13 +57,22 @@ class MetroVisualization {
             .data(Object.entries(this.stations))
             .enter()
             .append('circle')
-            .attr('class', 'station-node')
+            .attr('class', d => {
+                const isMultimodal = d[1].lines && d[1].lines.length > 1;
+                return isMultimodal ? 'station-node multimodal-station' : 'station-node';
+            })
             .attr('cx', d => d[1].x)
             .attr('cy', d => d[1].y)
-            .attr('r', d => this.getStationRadius(d[1].type))
+            .attr('r', d => {
+                const isMultimodal = d[1].lines && d[1].lines.length > 1;
+                return this.getStationRadius(d[1].type, isMultimodal);
+            })
             .attr('fill', d => this.getStationColor(d[1]))
             .attr('stroke', '#ffffff')
-            .attr('stroke-width', 2)
+            .attr('stroke-width', d => {
+                const isMultimodal = d[1].lines && d[1].lines.length > 1;
+                return isMultimodal ? 3 : 2;
+            })
             .attr('data-station', d => d[0])
             .on('click', (event, d) => this.onStationClick(d[0]))
             .on('mouseover', (event, d) => this.showStationTooltip(event, d))
@@ -97,6 +106,11 @@ class MetroVisualization {
     }
 
     getStationColor(stationData) {
+        // Si la estación tiene múltiples líneas, usar un color especial
+        if (stationData.lines && stationData.lines.length > 1) {
+            return '#6366f1'; // Color especial para estaciones multimodales
+        }
+        
         const colors = {
             'metro': '#3b82f6',
             'bus': '#10b981',
@@ -460,29 +474,154 @@ class SimpleMetroVisualization {
 
     drawLabels() {
         Object.entries(this.stations).forEach(([name, station]) => {
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            
-            text.setAttribute('x', station.x);
-            text.setAttribute('y', station.y + this.getStationRadius(station.type) + 12);
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('font-size', '9px');
-            text.setAttribute('font-weight', '600');
-            text.setAttribute('fill', '#1f2937');
-            text.setAttribute('class', 'station-label');
-            text.textContent = name;
-            
-            this.svg.appendChild(text);
+            this.drawStationLabel(name, station);
         });
     }
 
-    getStationRadius(type) {
-        const radii = {
+    // Dibujar etiqueta de estación con múltiples opciones de orientación
+    drawStationLabel(stationName, stationData) {
+        const isMultimodal = stationData.lines && stationData.lines.length > 1;
+        const radius = this.getStationRadius(stationData.type, isMultimodal);
+        
+        // Obtener orientación basada en la posición de la estación
+        const orientation = this.getLabelOrientation(stationName, stationData);
+        
+        // Usar splitStationName para dividir nombres largos
+        const nameLines = window.METRO_DATA.splitStationName(stationName);
+        
+        if (nameLines.length === 1 && orientation === 'horizontal') {
+            // Nombre simple horizontal
+            this.createSingleLineLabel(stationName, stationData, radius, orientation);
+        } else {
+            // Nombre múltiple líneas o con orientación especial
+            this.createMultiLineLabel(nameLines, stationData, radius, orientation);
+        }
+    }
+
+    // Determinar orientación del texto basada en la posición y densidad
+    getLabelOrientation(stationName, stationData) {
+        // Si hay una orientación forzada por el usuario, usarla (excepto 'auto')
+        if (this.forceOrientation && this.forceOrientation !== 'auto') {
+            return this.forceOrientation;
+        }
+        
+        const x = stationData.x;
+        const y = stationData.y;
+        
+        // Zonas especiales donde necesitamos orientación diferente
+        const densityZones = {
+            
+            // Zona del tranvía - diagonal
+            tranvia: { minX: 350, maxX: 700, minY: 410, maxY: 420 },
+            // Zona línea 1 y 2 (buses) - vertical
+            
+        };
+        return 'horizontal';
+    }
+
+    // Verificar si una posición está en una zona
+    isInZone(x, y, zone) {
+        return x >= zone.minX && x <= zone.maxX && y >= zone.minY && y <= zone.maxY;
+    }
+
+    // Crear etiqueta de una sola línea
+    createSingleLineLabel(text, stationData, radius, orientation) {
+        const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        
+        const { x, y, transform } = this.getLabelPosition(stationData, radius, orientation, 1);
+        
+        textElement.setAttribute('x', x);
+        textElement.setAttribute('y', y);
+        textElement.setAttribute('text-anchor', 'middle');
+        textElement.setAttribute('font-size', '8px');
+        textElement.setAttribute('font-weight', '600');
+        textElement.setAttribute('fill', '#1f2937');
+        textElement.setAttribute('class', 'station-label');
+        
+        if (transform) {
+            textElement.setAttribute('transform', transform);
+        }
+        
+        textElement.textContent = text;
+        this.svg.appendChild(textElement);
+    }
+
+    // Crear etiqueta multilínea
+    createMultiLineLabel(lines, stationData, radius, orientation) {
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('class', 'station-label-group');
+        
+        lines.forEach((line, index) => {
+            const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            
+            const { x, y, transform } = this.getLabelPosition(stationData, radius, orientation, lines.length, index);
+            
+            textElement.setAttribute('x', x);
+            textElement.setAttribute('y', y);
+            textElement.setAttribute('text-anchor', 'middle');
+            textElement.setAttribute('font-size', '7px');
+            textElement.setAttribute('font-weight', '600');
+            textElement.setAttribute('fill', '#1f2937');
+            textElement.setAttribute('class', 'station-label');
+            
+            if (transform) {
+                textElement.setAttribute('transform', transform);
+            }
+            
+            textElement.textContent = line;
+            group.appendChild(textElement);
+        });
+        
+        this.svg.appendChild(group);
+    }
+
+    // Calcular posición y transformación del texto
+    getLabelPosition(stationData, radius, orientation, totalLines = 1, lineIndex = 0) {
+        let x = stationData.x;
+        let y = stationData.y;
+        let transform = null;
+        
+        const lineHeight = 10;
+        const offset = 10;
+        
+        switch (orientation) {
+            case 'vertical':
+                // Texto vertical (rotado -90 grados)
+                x = stationData.x - offset - radius;
+                y = stationData.y + (lineHeight * (lineIndex - (totalLines - 1) / 2));
+                transform = `rotate(-90 ${x} ${y})`;
+                break;
+                
+            case 'diagonal':
+                // Texto diagonal (rotado -45 grados)
+                x = stationData.x + offset + radius;
+                y = stationData.y - offset - radius + (lineHeight * lineIndex);
+                transform = `rotate(-45 ${x} ${y})`;
+                break;
+                
+            case 'horizontal':
+            default:
+                // Texto horizontal (default)
+                x = stationData.x;
+                y = stationData.y + radius + offset + (lineHeight * lineIndex);
+                break;
+        }
+        
+        return { x, y, transform };
+    }
+
+    getStationRadius(type, isMultimodal = false) {
+        const baseRadii = {
             'metro': 6,
             'bus': 4,
             'cable': 5,
             'tranvia': 5
         };
-        return radii[type] || 4;
+        
+        const radius = baseRadii[type] || 4;
+        
+        // Las estaciones multimodales son más grandes
+        return isMultimodal ? radius + 2 : radius;
     }
 
     getStationColor(stationData) {
@@ -540,10 +679,21 @@ class SimpleMetroVisualization {
         });
 
         // Resaltar labels de estaciones en la ruta
-        const labels = this.svg.querySelectorAll('.station-label');
-        labels.forEach(label => {
-            if (path.includes(label.textContent)) {
-                label.classList.remove('grayed-out');
+        const labels = this.svg.querySelectorAll('.station-label, .station-label-group');
+        labels.forEach(labelElement => {
+            // Verificar si es un grupo o etiqueta individual
+            if (labelElement.classList.contains('station-label-group')) {
+                // Es un grupo, verificar el contenido de sus hijos
+                const textElements = labelElement.querySelectorAll('.station-label');
+                const combinedText = Array.from(textElements).map(el => el.textContent).join(' ');
+                if (path.some(stationName => combinedText.includes(stationName) || stationName.includes(combinedText))) {
+                    labelElement.classList.remove('grayed-out');
+                }
+            } else {
+                // Es una etiqueta individual
+                if (path.includes(labelElement.textContent)) {
+                    labelElement.classList.remove('grayed-out');
+                }
             }
         });
     }
@@ -563,7 +713,7 @@ class SimpleMetroVisualization {
         });
 
         // Poner todas las etiquetas en gris
-        const labels = this.svg.querySelectorAll('.station-label');
+        const labels = this.svg.querySelectorAll('.station-label, .station-label-group');
         labels.forEach(label => {
             label.classList.add('grayed-out');
         });
@@ -580,7 +730,7 @@ class SimpleMetroVisualization {
             conn.classList.remove('path', 'grayed-out');
         });
 
-        const labels = this.svg.querySelectorAll('.station-label');
+        const labels = this.svg.querySelectorAll('.station-label, .station-label-group');
         labels.forEach(label => {
             label.classList.remove('grayed-out');
         });
@@ -646,10 +796,15 @@ class SimpleMetroVisualization {
             document.body.appendChild(tooltip);
         }
 
+        // Mostrar todas las líneas de la estación
+        const lines = window.METRO_DATA.getStationLines(stationName);
+        const linesText = lines.length > 1 ? `Líneas: ${lines.join(', ')}` : `Línea: ${lines[0] || 'N/A'}`;
+
         tooltip.innerHTML = `
             <strong>${stationName}</strong><br/>
-            Línea: ${stationInfo.line}<br/>
+            ${linesText}<br/>
             Tipo: ${this.getTransportTypeName(stationInfo.type)}
+            ${lines.length > 1 ? '<br/><em>Estación multimodal</em>' : ''}
         `;
         
         tooltip.style.left = (event.pageX + 10) + 'px';
@@ -673,6 +828,20 @@ class SimpleMetroVisualization {
         };
         return names[type] || type;
     }
+
+    // Actualizar orientación de todas las etiquetas
+    updateLabelOrientation(newOrientation) {
+        this.forceOrientation = newOrientation;
+        
+        // Limpiar etiquetas existentes
+        const existingLabels = this.svg.querySelectorAll('.station-label, .station-label-group');
+        existingLabels.forEach(label => label.remove());
+        
+        // Redibujar etiquetas con nueva orientación
+        this.drawLabels();
+    }
+
+
 }
 
 // Exportar para uso en otros archivos

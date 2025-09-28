@@ -1,4 +1,5 @@
 :root {
+    /* Colores oficiales del Metro de Medellín */
     --color-metro-a: #0066cc;
     --color-metro-b: #ff6600;
     --color-bus-1: #00cc66;
@@ -9,17 +10,33 @@
     --color-cable-m: #ffcc00;
     --color-cable-h: #cc3300;
     --color-tranvia-t: #6699ff;
-    --primary-color: #1e3a8a;
-    --secondary-color: #3b82f6;
-    --accent-color: #10b981;
-    --danger-color: #ef4444;
-    --warning-color: #f59e0b;
-    --background: #f8fafc;
+    
+    /* Paleta de colores principales del Metro de Medellín */
+    --metro-blue-dark: #003d7a;
+    --metro-blue: #0066cc;
+    --metro-blue-light: #4d94ff;
+    --metro-orange: #ff6600;
+    --metro-orange-light: #ff9944;
+    --metro-green: #00aa44;
+    --metro-green-light: #44cc77;
+    --metro-red: #cc0033;
+    --metro-yellow: #ffcc00;
+    --metro-purple: #6633cc;
+    
+    /* Variables principales basadas en colores del Metro */
+    --primary-color: var(--metro-blue-dark);
+    --secondary-color: var(--metro-blue);
+    --accent-color: var(--metro-green);
+    --danger-color: var(--metro-red);
+    --warning-color: var(--metro-orange);
+    --background: linear-gradient(135deg, #f0f6ff, #e6f0ff);
     --surface: #ffffff;
-    --text-primary: #1f2937;
-    --text-secondary: #6b7280;
-    --border-color: #e5e7eb;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --surface-alt: #f8fafc;
+    --text-primary: #1a2332;
+    --text-secondary: #4a5568;
+    --border-color: #d1e7ff;
+    --shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+    --shadow-hover: 0 8px 25px rgba(0, 102, 204, 0.2);
 }
 
 * {
@@ -30,7 +47,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background);
+    background: var(--background);
     color: var(--text-primary);
     line-height: 1.6;
 }
@@ -42,10 +59,22 @@ body {
 }
 
 .header {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--metro-blue-dark), var(--metro-blue), var(--metro-blue-light));
     color: white;
     padding: 2rem 0;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-hover);
+    position: relative;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><circle cx="100" cy="20" r="20"/><circle cx="200" cy="80" r="15"/><circle cx="300" cy="40" r="25"/><circle cx="400" cy="70" r="18"/><circle cx="500" cy="30" r="22"/><circle cx="600" cy="60" r="16"/><circle cx="700" cy="85" r="20"/><circle cx="800" cy="25" r="24"/><circle cx="900" cy="55" r="19"/></svg>') repeat-x;
+    pointer-events: none;
 }
 
 .header-content {
@@ -53,6 +82,8 @@ body {
     margin: 0 auto;
     padding: 0 1rem;
     text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
 .header-content i {
@@ -79,7 +110,7 @@ body {
     margin: 0 auto;
     padding: 2rem 1rem;
     display: grid;
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 1fr 3fr;
     gap: 2rem;
 }
 
@@ -94,7 +125,19 @@ body {
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.route-selector::before, .disruptions-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--metro-blue), var(--metro-orange), var(--metro-green));
 }
 
 .route-selector h2, .disruptions-panel h3 {
@@ -119,11 +162,11 @@ body {
 }
 
 .origin-icon {
-    color: var(--accent-color);
+    color: var(--metro-green);
 }
 
 .destination-icon {
-    color: var(--danger-color);
+    color: var(--metro-red);
 }
 
 .station-select {
@@ -139,17 +182,18 @@ body {
 
 .station-select:focus {
     outline: none;
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--metro-blue);
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+    background: linear-gradient(135deg, #ffffff, #f0f6ff);
 }
 
 .calculate-btn, .disruption-btn, .clear-btn {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, var(--accent-color), #059669);
+    background: linear-gradient(135deg, var(--metro-green), var(--metro-green-light));
     color: white;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
@@ -159,28 +203,48 @@ body {
     justify-content: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    box-shadow: var(--shadow);
 }
 
 .calculate-btn:hover, .disruption-btn:hover, .clear-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    box-shadow: var(--shadow-hover);
 }
 
 .clear-btn {
-    background: linear-gradient(135deg, var(--text-secondary), #4b5563);
+    background: linear-gradient(135deg, var(--metro-blue), var(--metro-blue-light));
 }
 
 .clear-btn:hover {
-    box-shadow: 0 8px 25px rgba(75, 85, 99, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.3);
 }
 
 .disruption-btn {
-    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    background: linear-gradient(135deg, var(--metro-orange), var(--metro-orange-light));
     margin-top: 1rem;
 }
 
 .disruption-btn:hover {
-    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 102, 0, 0.3);
+}
+
+.disruption-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.disruption-buttons .disruption-btn {
+    flex: 1;
+    margin-top: 0;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, var(--metro-purple), #8855dd) !important;
+}
+
+.reset-btn:hover {
+    box-shadow: 0 8px 25px rgba(102, 51, 204, 0.3) !important;
 }
 
 .disruption-controls {
@@ -205,7 +269,19 @@ body {
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.route-results::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--metro-green), var(--metro-yellow), var(--metro-orange));
 }
 
 .route-results h2 {
@@ -221,11 +297,12 @@ body {
 }
 
 .route-info {
-    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    background: linear-gradient(135deg, #f0f6ff, #e6f0ff);
     border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 1rem;
-    border-left: 4px solid var(--secondary-color);
+    border-left: 4px solid var(--metro-blue);
+    border: 1px solid var(--border-color);
 }
 
 .route-path {
@@ -237,14 +314,15 @@ body {
     align-items: center;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
-    background: #f9fafb;
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
     border-radius: 0.5rem;
-    border-left: 3px solid var(--accent-color);
+    border-left: 3px solid var(--metro-green);
+    border: 1px solid var(--border-color);
 }
 
 .route-step i {
     margin-right: 0.5rem;
-    color: var(--secondary-color);
+    color: var(--metro-blue);
 }
 
 .route-stats {
@@ -254,23 +332,25 @@ body {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    background: linear-gradient(135deg, #fff4e6, #ffe0b3);
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     text-align: center;
-    border: 1px solid #f3d94e;
+    border: 2px solid var(--metro-yellow);
+    box-shadow: var(--shadow);
 }
 
 .stat-card h4 {
-    color: #92400e;
+    color: var(--metro-orange);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
+    font-weight: 600;
 }
 
 .stat-card .value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #78350f;
+    color: var(--metro-blue-dark);
 }
 
 .network-visualization {
@@ -278,7 +358,19 @@ body {
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.network-visualization::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--metro-purple), var(--metro-red), var(--metro-blue));
 }
 
 .network-visualization h2 {
@@ -290,10 +382,10 @@ body {
 }
 
 .network-graph {
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
     overflow: auto;
-    background: #fafafa;
+    background: linear-gradient(135deg, #f8fafc, #f0f6ff);
     max-height: 900px;
 }
 
@@ -306,38 +398,134 @@ body {
     margin: 2rem auto;
     max-width: 1200px;
     border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
+    padding: 2rem;
+    box-shadow: var(--shadow-hover);
+    border: 2px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.legend::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, 
+        var(--color-metro-a), 
+        var(--color-metro-b), 
+        var(--color-tranvia-t),
+        var(--color-bus-1), 
+        var(--color-bus-2),
+        var(--color-cable-p),
+        var(--color-cable-j),
+        var(--color-cable-k),
+        var(--color-cable-m),
+        var(--color-cable-h)
+    );
 }
 
 .legend h3 {
     color: var(--primary-color);
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+    justify-content: center;
 }
 
 .legend-items {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    background: #f9fafb;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.legend-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--metro-blue);
 }
 
 .legend-color {
-    width: 20px;
-    height: 4px;
-    border-radius: 2px;
+    width: 32px;
+    height: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.legend-item span:last-child {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* Estilos especiales para categorías de transporte */
+.legend-category {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 1rem 0 0.5rem 0;
+    margin-top: 1rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.legend-category:first-child {
+    margin-top: 0;
+    border-top: none;
+}
+
+.legend-category h4 {
+    color: var(--metro-blue-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-category h4 i {
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+/* Efectos hover específicos por tipo de línea con colores del Metro */
+.legend-item.metro-line:hover {
+    background: linear-gradient(135deg, #e6f0ff, #ccddff);
+    border-color: var(--metro-blue);
+}
+
+.legend-item.bus-line:hover {
+    background: linear-gradient(135deg, #e6ffe6, #ccffcc);
+    border-color: var(--metro-green);
+}
+
+.legend-item.cable-line:hover {
+    background: linear-gradient(135deg, #f0e6ff, #e0ccff);
+    border-color: var(--metro-purple);
+}
+
+.legend-item.tranvia-line:hover {
+    background: linear-gradient(135deg, #e6f0ff, #cce6ff);
+    border-color: var(--color-tranvia-t);
 }
 
 .linea-a { background-color: var(--color-metro-a); }
@@ -352,11 +540,12 @@ body {
 .linea-t { background-color: var(--color-tranvia-t); }
 
 .footer {
-    background-color: var(--text-primary);
+    background: linear-gradient(135deg, var(--metro-blue-dark), var(--metro-blue));
     color: white;
     text-align: center;
     padding: 2rem;
     margin-top: 2rem;
+    box-shadow: var(--shadow-hover);
 }
 
 /* Estilos para el grafo SVG */
@@ -370,21 +559,32 @@ body {
 }
 
 .station-node.origin {
-    fill: var(--accent-color);
-    stroke: #047857;
+    fill: var(--metro-green);
+    stroke: var(--metro-green-light);
     stroke-width: 3;
 }
 
 .station-node.destination {
-    fill: var(--danger-color);
-    stroke: #dc2626;
+    fill: var(--metro-red);
+    stroke: #ff3366;
     stroke-width: 3;
 }
 
 .station-node.path {
-    fill: var(--warning-color);
-    stroke: #d97706;
+    fill: var(--metro-yellow);
+    stroke: var(--metro-orange);
     stroke-width: 2;
+}
+
+/* Estaciones multimodales */
+.multimodal-station {
+    stroke-width: 3 !important;
+    filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3));
+}
+
+.multimodal-station:hover {
+    transform: scale(1.2);
+    filter: drop-shadow(0 4px 8px rgba(99, 102, 241, 0.5));
 }
 
 /* Estaciones grises cuando hay una ruta activa */
@@ -449,8 +649,23 @@ body {
         font-size: 2rem;
     }
     
+    .legend {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
     .legend-items {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .legend-item {
+        padding: 0.75rem;
+    }
+    
+    .legend h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
     }
     
     .route-stats {

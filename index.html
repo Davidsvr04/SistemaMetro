@@ -68,9 +68,24 @@
                 <div class="disruptions-panel">
                     <h3><i class="fas fa-exclamation-triangle"></i> Eventos Disruptivos</h3>
                     <div class="disruption-controls">
-                        <label for="estacionCerrada">Estación Cerrada:</label>
+                        <label for="estacionCerrada">Estación con Problemas:</label>
                         <select id="estacionCerrada" class="station-select">
                             <option value="">Sin interrupciones</option>
+                        </select>
+                        
+                        <label for="lineaCerrada">Línea Específica (opcional):</label>
+                        <select id="lineaCerrada" class="station-select">
+                            <option value="">Cerrar toda la estación</option>
+                            <option value="A">Línea A (Metro)</option>
+                            <option value="B">Línea B (Metro)</option>
+                            <option value="T">Línea T (Tranvía)</option>
+                            <option value="1">Línea 1 (Bus)</option>
+                            <option value="2">Línea 2 (Bus)</option>
+                            <option value="P">Línea P (MetroCable)</option>
+                            <option value="J">Línea J (MetroCable)</option>
+                            <option value="K">Línea K (MetroCable)</option>
+                            <option value="M">Línea M (MetroCable)</option>
+                            <option value="H">Línea H (MetroCable)</option>
                         </select>
                         
                         <label for="factorRetraso">Factor de Retraso:</label>
@@ -81,10 +96,17 @@
                             <option value="2.5">Mantenimiento (2.5x)</option>
                         </select>
 
-                        <button id="aplicarDisrupciones" class="disruption-btn">
-                            <i class="fas fa-cog"></i>
-                            Aplicar Cambios
-                        </button>
+                        <div class="disruption-buttons">
+                            <button id="aplicarDisrupciones" class="disruption-btn">
+                                <i class="fas fa-cog"></i>
+                                Aplicar Cambios
+                            </button>
+                            
+                            <button id="resetDisrupciones" class="disruption-btn reset-btn">
+                                <i class="fas fa-refresh"></i>
+                                Restablecer
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -98,9 +120,12 @@
                 </div>
 
                 <div class="network-visualization">
-                    <h2><i class="fas fa-project-diagram"></i> Red de Transporte</h2>
+                    <div class="visualization-header">
+                        <h2><i class="fas fa-project-diagram"></i> Red de Transporte</h2>
+                    </div>
+                    
                     <div id="networkGraph" class="network-graph">
-                        <svg id="metroSvg" width="100%" height="900">
+                        <svg id="metroSvg" width="100%" height="1100">
                             <!-- El grafo se generará dinámicamente -->
                         </svg>
                     </div>
@@ -109,47 +134,66 @@
         </main>
 
         <div class="legend">
-            <h3><i class="fas fa-info-circle"></i> Leyenda de Líneas</h3>
+            <h3><i class="fas fa-info-circle"></i> Sistema de Transporte Público - Medellín</h3>
             <div class="legend-items">
-                <div class="legend-item">
+                <!-- Metro -->
+                <div class="legend-category">
+                    <h4><i class="fas fa-subway"></i> Metro</h4>
+                </div>
+                <div class="legend-item metro-line">
                     <span class="legend-color linea-a"></span>
-                    <span>Línea A (Metro)</span>
+                    <span>Línea A </span>
                 </div>
-                <div class="legend-item">
+                <div class="legend-item metro-line">
                     <span class="legend-color linea-b"></span>
-                    <span>Línea B (Metro)</span>
+                    <span>Línea B </span>
                 </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-1"></span>
-                    <span>Línea 1 (Bus)</span>
+                
+                <!-- Tranvía -->
+                <div class="legend-category">
+                    <h4><i class="fas fa-train"></i> Tranvía</h4>
                 </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-2"></span>
-                    <span>Línea 2 (Bus)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-p"></span>
-                    <span>Línea P (MetroCable)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-j"></span>
-                    <span>Línea J (MetroCable)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-k"></span>
-                    <span>Línea K (MetroCable)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-m"></span>
-                    <span>Línea M (MetroCable)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color linea-h"></span>
-                    <span>Línea H (MetroCable)</span>
-                </div>
-                <div class="legend-item">
+                <div class="legend-item tranvia-line">
                     <span class="legend-color linea-t"></span>
-                    <span>Línea T (Tranvía)</span>
+                    <span>Línea T </span>
+                </div>
+                
+                <!-- Buses de Tránsito Rápido -->
+                <div class="legend-category">
+                    <h4><i class="fas fa-bus"></i> Metroplus</h4>
+                </div>
+                <div class="legend-item bus-line">
+                    <span class="legend-color linea-1"></span>
+                    <span>Línea 1 Buses</span>
+                </div>
+                <div class="legend-item bus-line">
+                    <span class="legend-color linea-2"></span>
+                    <span>Línea 2 Buses</span>
+                </div>
+                
+                <!-- MetroCable -->
+                <div class="legend-category">
+                    <h4><i class="fas fa-mountain"></i> MetroCable</h4>
+                </div>
+                <div class="legend-item cable-line">
+                    <span class="legend-color linea-p"></span>
+                    <span>Línea P </span>
+                </div>
+                <div class="legend-item cable-line">
+                    <span class="legend-color linea-j"></span>
+                    <span>Línea J </span>
+                </div>
+                <div class="legend-item cable-line">
+                    <span class="legend-color linea-k"></span>
+                    <span>Línea K </span>
+                </div>
+                <div class="legend-item cable-line">
+                    <span class="legend-color linea-m"></span>
+                    <span>Línea M </span>
+                </div>
+                <div class="legend-item cable-line">
+                    <span class="legend-color linea-h"></span>
+                    <span>Línea H </span>
                 </div>
             </div>
         </div>

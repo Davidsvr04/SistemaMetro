@@ -51,8 +51,14 @@ class MetroApp {
             destinoOption.textContent = station;
             destinoSelect.appendChild(destinoOption);
 
-            // Selector de estación cerrada
+            // Selector de estación cerrada - incluir información de líneas
+            const stationLines = window.METRO_DATA.getStationLines(station);
+            const linesText = stationLines.length > 1 ? ` (${stationLines.join(', ')})` : ` (${stationLines[0] || ''})`;
+            
             const cerradaOption = document.createElement('option');
+            cerradaOption.value = station;
+            cerradaOption.textContent = station + linesText;
+            estacionCerradaSelect.appendChild(cerradaOption);
             cerradaOption.value = station;
             cerradaOption.textContent = station;
             estacionCerradaSelect.appendChild(cerradaOption);
@@ -72,6 +78,14 @@ class MetroApp {
         // Botón aplicar disrupciones
         document.getElementById('aplicarDisrupciones').addEventListener('click', 
             () => this.applyDisruptions());
+            
+        // Botón reset disrupciones
+        document.getElementById('resetDisrupciones').addEventListener('click', 
+            () => this.resetDisruptions());
+
+        // Cambio en selector de estación con problemas para filtrar líneas
+        document.getElementById('estacionCerrada').addEventListener('change', 
+            () => this.updateLineSelector());
 
         // Evento personalizado para selección de estación en el grafo
         document.addEventListener('stationSelected', (event) => {
@@ -90,6 +104,16 @@ class MetroApp {
                 this.visualization.resize();
             }
         });
+
+        // Control de orientación de etiquetas
+        const labelOrientationSelect = document.getElementById('labelOrientation');
+        if (labelOrientationSelect) {
+            labelOrientationSelect.addEventListener('change', () => {
+                if (this.visualization) {
+                    this.visualization.updateLabelOrientation(labelOrientationSelect.value);
+                }
+            });
+        }
 
         // Atajos de teclado
         document.addEventListener('keydown', (event) => {
@@ -148,7 +172,15 @@ class MetroApp {
         } catch (error) {
             console.error('Error al calcular ruta:', error);
             this.hideLoading();
-            this.showError(`Error: ${error.message}`);
+            
+            // Análisis inteligente del error para proporcionar alternativas
+            if (error.message.includes('No se encontró una ruta válida')) {
+                this.handleBlockedRoute(origen, destino);
+            } else if (error.message.includes('estación no válida')) {
+                this.showError('⚠️ Una de las estaciones seleccionadas no es válida.');
+            } else {
+                this.showError(`Error: ${error.message}`);
+            }
         }
     }
 
@@ -282,10 +314,11 @@ class MetroApp {
         routeInfo.innerHTML += comparisonHTML;
     }
 
-    // Aplicar disrupciones al sistema
+    // Aplicar disrupciones al sistema (actualizado)
     applyDisruptions() {
         try {
             const estacionCerrada = document.getElementById('estacionCerrada').value;
+            const lineaCerrada = document.getElementById('lineaCerrada')?.value; // Nuevo selector
             const factorRetraso = parseFloat(document.getElementById('factorRetraso').value);
 
             // Aplicar factor de retraso
@@ -293,9 +326,21 @@ class MetroApp {
             this.pathfinder.applyDelayFactor(factorRetraso);
 
             // Manejar estaciones cerradas
-            if (estacionCerrada && !this.closedStations.has(estacionCerrada)) {
-                this.closedStations.add(estacionCerrada);
-                this.pathfinder.closeStation(estacionCerrada);
+            if (estacionCerrada) {
+                const stationLines = window.METRO_DATA.getStationLines(estacionCerrada);
+                
+                if (lineaCerrada && stationLines.includes(lineaCerrada)) {
+                    // Cerrar solo una línea específica
+                    this.pathfinder.closeStationLine(estacionCerrada, lineaCerrada);
+                    this.showSuccess(`Línea ${lineaCerrada} de ${estacionCerrada} cerrada`);
+                } else {
+                    // Cerrar toda la estación
+                    if (!this.closedStations.has(estacionCerrada)) {
+                        this.closedStations.add(estacionCerrada);
+                        this.pathfinder.closeStation(estacionCerrada);
+                        this.showSuccess(`Estación ${estacionCerrada} completamente cerrada`);
+                    }
+                }
             }
 
             // Actualizar visualización
@@ -312,11 +357,144 @@ class MetroApp {
                 }
             }
 
-            this.showSuccess('Disrupciones aplicadas correctamente');
-
         } catch (error) {
             console.error('Error al aplicar disrupciones:', error);
             this.showError('Error al aplicar disrupciones');
+        }
+    }
+
+    // Manejar rutas bloqueadas con análisis inteligente
+    handleBlockedRoute(origen, destino) {
+        const closedStations = Array.from(this.pathfinder.closedStations);
+        const closedLines = Array.from(this.pathfinder.closedLines);
+        
+        if (closedStations.length === 0 && closedLines.length === 0) {
+            this.showError('🚫 No existe una ruta disponible entre estas estaciones.');
+            return;
+        }
+
+        // Analizar cada estación cerrada para ver si es crítica
+        let criticalStation = null;
+        let alternativeMessage = '';
+
+        for (const closedStation of closedStations) {
+            const routeAnalysis = window.METRO_DATA.analyzeRouteForClosedStation(origen, destino, closedStation);
+            
+            for (const analysis of routeAnalysis) {
+                if (analysis.blocked && analysis.alternativeNeeded) {
+                    criticalStation = closedStation;
+                    
+                    // Obtener nombres de línea más descriptivos
+                    const lineNames = {
+                        'A': 'Metro A',
+                        'B': 'Metro B', 
+                        'T': 'Tranvía',
+                        '1': 'Bus 1',
+                        '2': 'Bus 2',
+                        'P': 'MetroCable P',
+                        'J': 'MetroCable J',
+                        'K': 'MetroCable K',
+                        'M': 'MetroCable M',
+                        'H': 'MetroCable H'
+                    };
+
+                    const lineName = lineNames[analysis.line] || `Línea ${analysis.line}`;
+                    
+                    if (analysis.lastAccessible) {
+                        alternativeMessage = `🚫 **Estación ${closedStation} no disponible**\n\n`;
+                        alternativeMessage += `📍 **Máximo accesible:** ${analysis.lastAccessible} (${lineName})\n\n`;
+                        alternativeMessage += `🚌 **Alternativas sugeridas:**\n`;
+                        alternativeMessage += `• Toma el ${lineName} hasta ${analysis.lastAccessible}\n`;
+                        alternativeMessage += `• Desde allí usa transporte alterno (bus, taxi) hasta ${destino}\n`;
+                        alternativeMessage += `• O usa el botón "Restablecer" para habilitar todas las estaciones`;
+                    } else {
+                        alternativeMessage = `🚫 **Estación ${closedStation} no disponible**\n\n`;
+                        alternativeMessage += `❌ No hay estaciones accesibles en la ${lineName} hacia ${destino}\n\n`;
+                        alternativeMessage += `🚌 **Alternativas:**\n`;
+                        alternativeMessage += `• Usa transporte alterno desde ${origen}\n`;
+                        alternativeMessage += `• O usa el botón "Restablecer" para habilitar todas las estaciones`;
+                    }
+                    break;
+                }
+            }
+            
+            if (criticalStation) break;
+        }
+
+        // Si no encontramos análisis específico, dar mensaje genérico pero útil
+        if (!alternativeMessage) {
+            alternativeMessage = '🚫 **Ruta bloqueada por disrupciones**\n\n';
+            
+            if (closedStations.length > 0) {
+                alternativeMessage += `🚇 **Estaciones cerradas:** ${closedStations.join(', ')}\n`;
+            }
+            
+            if (closedLines.length > 0) {
+                const lineNames = closedLines.map(line => {
+                    const parts = line.split('_');
+                    return `${parts[0]} (línea ${parts[1]})`;
+                }).join(', ');
+                alternativeMessage += `🚆 **Líneas cerradas:** ${lineNames}\n`;
+            }
+        }
+
+        // Mostrar mensaje en formato HTML para mejor presentación
+        this.showBlockedRouteMessage(alternativeMessage);
+    }
+
+    // Mostrar mensaje especializado para rutas bloqueadas
+    showBlockedRouteMessage(message) {
+        // Convertir el mensaje de markdown a HTML simple
+        const htmlMessage = message
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>')
+            .replace(/🚫/g, '<span style="color: #ef4444;">🚫</span>')
+            .replace(/📍/g, '<span style="color: #3b82f6;">📍</span>')
+            .replace(/🚌/g, '<span style="color: #10b981;">🚌</span>')
+            .replace(/🔄/g, '<span style="color: #f59e0b;">🔄</span>');
+
+        this.showMessage(htmlMessage, 'error', 8000); // Más tiempo para leer
+    }
+
+    // Restablecer todas las disrupciones
+    resetDisruptions() {
+        try {
+            // Restablecer factor de retraso a normal
+            this.delayFactor = 1.0;
+            this.pathfinder.applyDelayFactor(1.0);
+
+            // Reabrir todas las estaciones y líneas cerradas
+            this.closedStations.clear();
+            this.pathfinder.resetAllClosures();
+
+            // Restablecer valores de los selectores
+            document.getElementById('estacionCerrada').value = '';
+            document.getElementById('factorRetraso').value = '1';
+            
+            // Limpiar selector de líneas
+            const lineaCerradaSelect = document.getElementById('lineaCerrada');
+            while (lineaCerradaSelect.children.length > 1) {
+                lineaCerradaSelect.removeChild(lineaCerradaSelect.lastChild);
+            }
+            
+            // Limpiar visualización de disrupciones
+            this.visualization.showDisruptions([]);
+
+            // Recalcular ruta actual si existe
+            if (this.currentRoute) {
+                const origen = document.getElementById('origen').value;
+                const destino = document.getElementById('destino').value;
+                
+                if (origen && destino) {
+                    this.calculateRoute();
+                }
+            }
+
+            this.showSuccess('🔄 Todas las disrupciones han sido restablecidas');
+
+        } catch (error) {
+            console.error('Error al restablecer disrupciones:', error);
+            this.showError('Error al restablecer las disrupciones');
         }
     }
 
@@ -340,6 +518,45 @@ class MetroApp {
     }
 
     // Manejar cambios en los selectores
+    // Actualizar selector de líneas según la estación seleccionada
+    updateLineSelector() {
+        const estacionCerrada = document.getElementById('estacionCerrada').value;
+        const lineaCerradaSelect = document.getElementById('lineaCerrada');
+        
+        // Limpiar opciones previas (excepto la primera)
+        while (lineaCerradaSelect.children.length > 1) {
+            lineaCerradaSelect.removeChild(lineaCerradaSelect.lastChild);
+        }
+        
+        if (estacionCerrada) {
+            // Obtener líneas de la estación seleccionada
+            const stationLines = window.METRO_DATA.getStationLines(estacionCerrada);
+            
+            // Añadir solo las líneas disponibles para esta estación
+            stationLines.forEach(lineId => {
+                const option = document.createElement('option');
+                option.value = lineId;
+                
+                // Nombres descriptivos para cada línea
+                const lineNames = {
+                    'A': 'Línea A (Metro)',
+                    'B': 'Línea B (Metro)', 
+                    'T': 'Línea T (Tranvía)',
+                    '1': 'Línea 1 (Bus)',
+                    '2': 'Línea 2 (Bus)',
+                    'P': 'Línea P (MetroCable)',
+                    'J': 'Línea J (MetroCable)',
+                    'K': 'Línea K (MetroCable)',
+                    'M': 'Línea M (MetroCable)',
+                    'H': 'Línea H (MetroCable)'
+                };
+                
+                option.textContent = lineNames[lineId] || `Línea ${lineId}`;
+                lineaCerradaSelect.appendChild(option);
+            });
+        }
+    }
+
     onSelectionChange() {
         // Limpiar visualización anterior si hay cambios
         if (this.currentRoute) {
@@ -469,8 +686,12 @@ class MetroApp {
 
         messageDiv.innerHTML = `
             <i class="${icons[type]}"></i>
-            <span>${message}</span>
+            <div style="flex: 1; line-height: 1.4;">${message}</div>
         `;
+
+        // Ajustar ancho para mensajes largos
+        const isLongMessage = message.length > 100 || message.includes('<br>');
+        const maxWidth = isLongMessage ? '500px' : '400px';
 
         messageDiv.style.cssText = `
             position: fixed;
@@ -478,16 +699,17 @@ class MetroApp {
             right: 20px;
             background: ${colors[type]};
             color: white;
-            padding: 15px 20px;
+            padding: ${isLongMessage ? '20px' : '15px 20px'};
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 10000;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            max-width: 400px;
+            align-items: flex-start;
+            gap: 12px;
+            font-weight: 500;
+            max-width: ${maxWidth};
             animation: slideIn 0.3s ease;
+            font-size: ${isLongMessage ? '13px' : '14px'};
         `;
 
         document.body.appendChild(messageDiv);

@@ -4,6 +4,8 @@ class DijkstraPathfinder {
         this.graph = graph;
         this.originalGraph = JSON.parse(JSON.stringify(graph)); // Copia del grafo original
         this.closedStations = new Set();
+        this.closedStationLines = new Map(); // Líneas específicas cerradas por estación
+        this.closedLines = new Set(); // Líneas completamente cerradas
         this.delayFactor = 1.0;
     }
 
@@ -13,7 +15,7 @@ class DijkstraPathfinder {
         this.updateGraph();
     }
 
-    // Cerrar una estación (simular interrupción)
+    // Cerrar una estación completamente (todas las líneas)
     closeStation(stationName) {
         if (stationName && this.graph[stationName]) {
             this.closedStations.add(stationName);
@@ -21,9 +23,38 @@ class DijkstraPathfinder {
         }
     }
 
+    // Cerrar una línea específica de una estación multimodal
+    closeStationLine(stationName, lineId) {
+        if (!this.closedStationLines.has(stationName)) {
+            this.closedStationLines.set(stationName, new Set());
+        }
+        this.closedStationLines.get(stationName).add(lineId);
+        this.updateGraph();
+    }
+
     // Abrir una estación previamente cerrada
     openStation(stationName) {
         this.closedStations.delete(stationName);
+        this.updateGraph();
+    }
+
+    // Abrir una línea específica de una estación
+    openStationLine(stationName, lineId) {
+        if (this.closedStationLines.has(stationName)) {
+            this.closedStationLines.get(stationName).delete(lineId);
+            if (this.closedStationLines.get(stationName).size === 0) {
+                this.closedStationLines.delete(stationName);
+            }
+        }
+        this.updateGraph();
+    }
+
+    // Restablecer todas las interrupciones (estaciones y líneas cerradas)
+    resetAllClosures() {
+        this.closedStations.clear();
+        this.closedStationLines.clear();
+        this.closedLines.clear();
+        this.delayFactor = 1.0;
         this.updateGraph();
     }
 
@@ -39,20 +70,77 @@ class DijkstraPathfinder {
             });
         });
 
-        // Eliminar conexiones de estaciones cerradas
+        // Eliminar conexiones de estaciones completamente cerradas
         this.closedStations.forEach(closedStation => {
-            // Vaciar las conexiones de la estación cerrada
             if (this.graph[closedStation]) {
                 this.graph[closedStation] = [];
+                console.log(`Estación completamente cerrada: ${closedStation}`);
             }
             
-            // Eliminar conexiones hacia la estación cerrada
+            // Eliminar todas las conexiones hacia la estación cerrada
             Object.keys(this.graph).forEach(station => {
+                const originalLength = this.graph[station].length;
                 this.graph[station] = this.graph[station].filter(
                     connection => connection.station !== closedStation
                 );
+                
+                const removedConnections = originalLength - this.graph[station].length;
+                if (removedConnections > 0) {
+                    console.log(`Eliminadas ${removedConnections} conexiones de ${station} hacia ${closedStation}`);
+                }
             });
         });
+
+        // Eliminar conexiones de líneas específicas cerradas
+        this.closedStationLines.forEach((closedLines, stationName) => {
+            if (this.graph[stationName]) {
+                // Filtrar las conexiones que usan las líneas cerradas
+                const originalLength = this.graph[stationName].length;
+                this.graph[stationName] = this.graph[stationName].filter(
+                    connection => !closedLines.has(connection.line)
+                );
+                
+                const removedConnections = originalLength - this.graph[stationName].length;
+                if (removedConnections > 0) {
+                    console.log(`Eliminadas ${removedConnections} conexiones de líneas ${Array.from(closedLines).join(', ')} desde ${stationName}`);
+                }
+            }
+            
+            // Eliminar conexiones hacia la estación en las líneas cerradas
+            Object.keys(this.graph).forEach(otherStation => {
+                if (otherStation !== stationName) {
+                    const originalLength = this.graph[otherStation].length;
+                    this.graph[otherStation] = this.graph[otherStation].filter(
+                        connection => !(connection.station === stationName && closedLines.has(connection.line))
+                    );
+                    
+                    const removedConnections = originalLength - this.graph[otherStation].length;
+                    if (removedConnections > 0) {
+                        console.log(`Eliminadas ${removedConnections} conexiones hacia ${stationName} en líneas ${Array.from(closedLines).join(', ')} desde ${otherStation}`);
+                    }
+                }
+            });
+        });
+    }
+
+    // Verificar si una estación está disponible para ser origen o destino
+    isStationAccessible(stationName) {
+        // Si la estación está completamente cerrada
+        if (this.closedStations.has(stationName)) {
+            return false;
+        }
+        
+        // Si tiene líneas específicas cerradas, verificar si queda alguna línea abierta
+        if (this.closedStationLines.has(stationName)) {
+            const stationLines = window.METRO_DATA.getStationLines(stationName);
+            const closedLines = this.closedStationLines.get(stationName);
+            
+            // Si todas las líneas están cerradas, la estación no es accesible
+            const openLines = stationLines.filter(line => !closedLines.has(line));
+            return openLines.length > 0;
+        }
+        
+        return true;
     }
 
     // Algoritmo de Dijkstra optimizado
@@ -61,8 +149,13 @@ class DijkstraPathfinder {
             throw new Error('Estación de origen o destino no encontrada');
         }
 
-        if (this.closedStations.has(start) || this.closedStations.has(end)) {
-            throw new Error('La estación de origen o destino está cerrada');
+        // Verificar si las estaciones están accesibles
+        if (!this.isStationAccessible(start)) {
+            throw new Error(`La estación de origen "${start}" no está disponible debido a interrupciones`);
+        }
+        
+        if (!this.isStationAccessible(end)) {
+            throw new Error(`La estación de destino "${end}" no está disponible debido a interrupciones`);
         }
 
         const distances = {};
@@ -93,7 +186,12 @@ class DijkstraPathfinder {
             this.graph[currentStation].forEach(neighbor => {
                 const neighborStation = neighbor.station;
                 
-                if (visited.has(neighborStation) || this.closedStations.has(neighborStation)) {
+                if (visited.has(neighborStation)) {
+                    return;
+                }
+
+                // Verificar si el vecino está accesible
+                if (!this.isStationAccessible(neighborStation)) {
                     return;
                 }
 
@@ -205,6 +303,81 @@ class DijkstraPathfinder {
     // Obtener líneas únicas en el recorrido
     getUniqueLines(lines) {
         return [...new Set(lines)];
+    }
+
+    // Encontrar la estación más lejana accesible hacia un destino
+    findFarthestAccessibleStation(start, targetDirection) {
+        if (!this.graph[start]) {
+            throw new Error(`Estación de origen ${start} no válida`);
+        }
+
+        const distances = {};
+        const previous = {};
+        const visited = new Set();
+        const priorityQueue = new MinHeap();
+
+        // Inicializar distancias
+        Object.keys(this.graph).forEach(station => {
+            distances[station] = Infinity;
+        });
+        distances[start] = 0;
+
+        priorityQueue.insert({ station: start, distance: 0, path: [start] });
+
+        let farthestStation = start;
+        let maxDistance = 0;
+
+        while (!priorityQueue.isEmpty()) {
+            const current = priorityQueue.extractMin();
+            const currentStation = current.station;
+
+            if (visited.has(currentStation)) continue;
+            visited.add(currentStation);
+
+            // Si llegamos más lejos que antes, actualizar
+            if (current.distance > maxDistance) {
+                maxDistance = current.distance;
+                farthestStation = currentStation;
+            }
+
+            // Explorar vecinos accesibles
+            if (this.graph[currentStation]) {
+                this.graph[currentStation].forEach(neighbor => {
+                    const newDistance = current.distance + neighbor.time;
+                    
+                    if (newDistance < distances[neighbor.station]) {
+                        distances[neighbor.station] = newDistance;
+                        previous[neighbor.station] = currentStation;
+                        
+                        priorityQueue.insert({
+                            station: neighbor.station,
+                            distance: newDistance,
+                            path: [...current.path, neighbor.station]
+                        });
+                    }
+                });
+            }
+        }
+
+        return {
+            station: farthestStation,
+            distance: maxDistance,
+            accessible: visited
+        };
+    }
+
+    // Verificar si una ruta directa es posible (sin calcular completamente)
+    isDirectRouteBlocked(start, end) {
+        try {
+            // Intentar una búsqueda limitada
+            this.findShortestPath(start, end);
+            return false;
+        } catch (error) {
+            if (error.message.includes('No se encontró una ruta válida')) {
+                return true;
+            }
+            throw error;
+        }
     }
 
     // Obtener rutas alternativas
