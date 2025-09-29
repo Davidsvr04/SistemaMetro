@@ -638,6 +638,60 @@ body {
     stroke-dasharray: 5,5;
 }
 
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Ocultar el checkbox original */
+#horarioPico {
+    display: none;
+}
+
+/* Estilo del switch */
+#horarioPico + label {
+    position: relative;
+    padding-left: 60px; /* espacio para el switch */
+    cursor: pointer;
+}
+
+#horarioPico + label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 26px;
+    background: #ccc; /* gris cuando está apagado */
+    border-radius: 20px;
+    transition: background 0.3s;
+}
+
+#horarioPico + label::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+/* Cuando está activo */
+#horarioPico:checked + label::before {
+    background: #4caf50; /* verde */
+}
+
+#horarioPico:checked + label::after {
+    transform: translate(24px, -50%);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .main-content {

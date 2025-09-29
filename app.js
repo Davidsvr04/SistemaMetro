@@ -319,7 +319,13 @@ class MetroApp {
         try {
             const estacionCerrada = document.getElementById('estacionCerrada').value;
             const lineaCerrada = document.getElementById('lineaCerrada')?.value; // Nuevo selector
-            const factorRetraso = parseFloat(document.getElementById('factorRetraso').value);
+            let factorRetraso = parseFloat(document.getElementById('factorRetraso').value);
+            const horarioPico = document.getElementById('horarioPico').checked;
+
+            if(horarioPico) {
+                factorRetraso += 1.5; 
+            }
+            console.log("factorRetraso:", factorRetraso);
 
             // Aplicar factor de retraso
             this.delayFactor = factorRetraso;
