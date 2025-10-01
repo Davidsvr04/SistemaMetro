@@ -5,10 +5,39 @@ Este proyecto implementa un sistema interactivo para calcular rutas óptimas en 
 ## 🚇 Características Principales
 
 - **Cálculo de Rutas Óptimas**: Encuentra la mejor ruta entre dos estaciones según diferentes criterios
-- **Visualización Interactiva**: Representación gráfica de la red de transporte
-- **Simulación de Disrupciones**: Maneja cierres de estaciones y factores de retraso
-- **Análisis de Rutas**: Compara múltiples opciones de viaje
-- **Interfaz Intuitiva**: Fácil de usar con selección visual de estaciones
+- **Visualización Interactiva**: Representación gráfica de la red de transporte con animaciones fluidas
+- **Simulación de Disrupciones**: Maneja cierres de estaciones completas o de líneas específicas con detección inteligente
+- **Análisis de Rutas**: Compara múltiples opciones de viaje con estadísticas detalladas
+- **Interfaz Moderna**: Diseño con los colores oficiales del Metro de Medellín y animaciones suaves
+- **Estaciones Multimodales**: Soporte completo para estaciones con múltiples líneas
+- **Mensajes Inteligentes**: Sistema de mensajes contextuales que sugiere alternativas cuando no hay ruta disponible
+
+## 🎨 Características de Diseño
+
+### Estética del Metro de Medellín
+- **Colores Oficiales**: Paleta basada en la identidad visual del Metro de Medellín
+  - Azul Metro: `#003d7a`, `#0066cc`, `#3399ff`
+  - Naranja: `#ff6600`, `#ff9933`
+  - Verde: `#00aa44`, `#00cc55`
+  - Amarillo: `#ffcc00`, `#ffe066`
+  - Morado: `#6633cc`, `#8855dd`
+  - Rojo: `#cc0033`, `#ff3366`
+
+### Animaciones y Transiciones
+- **Entrada Escalonada**: Los elementos de la leyenda aparecen con un efecto secuencial suave
+- **Hover Mejorado**: Efectos de elevación y escala en botones y tarjetas
+- **Pulso Sutil**: El botón de calcular tiene un pulso de sombra para destacarlo
+- **Ripple Effect**: Efecto de onda en botones al hacer clic
+- **Shimmer Effect**: Brillo sutil en las tarjetas de estadísticas al pasar el cursor
+- **Slide Animations**: Los resultados aparecen con una animación de deslizamiento
+- **Path Pulse**: Las rutas en el grafo tienen un pulso animado
+- **Loading Spinner**: Indicador de carga durante el cálculo de rutas
+
+### Mensajes de Estado
+- **Error**: Gradiente rojo con icono de advertencia
+- **Éxito**: Gradiente verde con icono de check
+- **Info**: Gradiente azul con icono de información
+- **Cargando**: Gradiente morado con spinner animado
 
 ## 🏗️ Arquitectura del Sistema
 
@@ -55,29 +84,42 @@ SistemaMetro/
 - **Menos Transbordos**: Reduce el número de cambios de línea
 
 ### 2. Simulación de Eventos Disruptivos
-- Cierre temporal de estaciones
-- Factores de retraso por clima o mantenimiento
-- Actualización dinámica de pesos en el grafo
+- **Cierre de Estaciones Completas**: Bloquea todas las líneas de una estación
+- **Cierre de Líneas Específicas**: Permite cerrar solo una línea en estaciones multimodales
+- **Detección Inteligente**: Identifica automáticamente estaciones críticas bloqueadas
+- **Sugerencias Alternativas**: Propone estaciones cercanas cuando no hay ruta disponible
+- **Reset Completo**: Limpia todas las interrupciones con un solo clic
 
 ### 3. Análisis de Rutas
 - Comparación de rutas alternativas
 - Estadísticas detalladas de tiempo, costo y transbordos
 - Velocidad promedio estimada
 - Eficiencia de la ruta
+- Análisis de accesibilidad desde estaciones bloqueadas
 
 ### 4. Visualización Interactiva
 - Selección de estaciones directamente en el grafo
-- Resaltado de rutas calculadas
-- Indicadores visuales de interrupciones
-- Leyenda de líneas con códigos de colores
+- Resaltado de rutas calculadas con animación
+- Indicadores visuales de interrupciones (líneas punteadas)
+- Leyenda organizada por categorías de transporte
+- Efectos hover con elevación y escala
+- Estaciones multimodales con indicador especial
+- Gráficos SVG con filtros drop-shadow y glow
+
+### 5. Filtrado Inteligente de Líneas
+- **Actualización Dinámica**: El selector de líneas se actualiza según la estación seleccionada
+- **Solo Líneas Disponibles**: Muestra únicamente las líneas que pasan por la estación
+- **Feedback Visual**: Deshabilitado cuando no hay estación seleccionada
 
 ## 🔧 Tecnologías Utilizadas
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Visualización**: SVG nativo
+- **Visualización**: SVG nativo con animaciones CSS
 - **Algoritmos**: Dijkstra con Min-Heap optimizado
-- **Estructuras de Datos**: Grafos dirigidos ponderados
-- **Diseño**: CSS Grid, Flexbox, Variables CSS
+- **Estructuras de Datos**: Grafos dirigidos ponderados, Sets, Maps
+- **Diseño**: CSS Grid, Flexbox, Variables CSS personalizadas
+- **Animaciones**: Cubic-Bezier easing, transforms, filters, pseudo-elementos
+- **UX**: Estados de carga, mensajes contextuales, feedback visual inmediato
 
 ## 📊 Algoritmo de Dijkstra
 
@@ -99,20 +141,33 @@ class DijkstraPathfinder {
 - **Pesos Dinámicos**: Adaptación según criterio seleccionado
 - **Manejo de Disrupciones**: Exclusión dinámica de nodos/aristas
 - **Rutas Alternativas**: Algoritmo para encontrar múltiples caminos
+- **Cierre de Líneas Específicas**: Soporte para estaciones multimodales con cierres selectivos
+- **Análisis de Accesibilidad**: Verifica la conectividad desde estaciones con disrupciones
+- **Búsqueda de Estaciones Alternativas**: Encuentra la estación accesible más lejana para sugerir alternativas
 
 ## 🎨 Diseño de Interfaz
 
 ### Principios de Diseño
-- **Responsive**: Adaptable a diferentes tamaños de pantalla
-- **Accesible**: Uso de iconos y colores contrastantes
-- **Intuitivo**: Flujo de usuario lógico y simple
-- **Visual**: Representación gráfica clara de la red
+- **Responsive**: Adaptable a diferentes tamaños de pantalla (1024px, 768px, 480px)
+- **Accesible**: Uso de iconos Font Awesome, colores contrastantes y focus states
+- **Intuitivo**: Flujo de usuario lógico y simple con feedback inmediato
+- **Visual**: Representación gráfica clara con animaciones fluidas
+- **Moderno**: Gradientes, sombras, efectos de profundidad y micro-interacciones
 
-### Paleta de Colores
-- Metro: Azul (#0066cc, #ff6600)
-- Bus: Verde/Rosa (#00cc66, #cc0066)
-- MetroCable: Morado/Rojo (#9933cc, #ff3366)
-- Tranvía: Azul claro (#6699ff)
+### Paleta de Colores (Metro de Medellín)
+- **Metro Líneas A/B**: Azul (`#003d7a`, `#0066cc`, `#3399ff`)
+- **Tranvía Línea T**: Azul claro (`#6699ff`)
+- **Metroplus Líneas 1/2**: Verde/Rosa (`#00cc66`, `#cc0066`)
+- **MetroCable P/J/K/M/H**: Morado/Rojo/Amarillo (`#9933cc`, `#ff3366`, `#ffcc00`)
+- **Acentos**: Naranja (`#ff6600`), Verde (`#00aa44`), Amarillo (`#ffcc00`)
+
+### Efectos Visuales
+- **Box Shadows**: Sombras suaves con múltiples capas
+- **Gradientes**: Transiciones de color lineales en 135deg
+- **Transforms**: Translate, scale, rotate para micro-interacciones
+- **Filters**: Drop-shadow, blur para profundidad
+- **Transitions**: Cubic-bezier personalizado (0.4, 0, 0.2, 1) para fluidez
+- **Animaciones**: Fade, slide, scale, pulse, shimmer, ripple
 
 ## 🚀 Cómo Usar
 
@@ -124,9 +179,12 @@ class DijkstraPathfinder {
 6. **Ver resultados**: Analizar la ruta propuesta y estadísticas
 
 ### Funciones Adicionales
-- **Eventos disruptivos**: Simular interrupciones del servicio
+- **Eventos disruptivos**: Simular interrupciones del servicio completas o por línea
 - **Selección visual**: Hacer clic en estaciones del grafo
 - **Comparación**: Ver rutas alternativas automáticamente
+- **Reset de interrupciones**: Botón para limpiar todas las disrupciones
+- **Filtrado inteligente**: Selector de líneas se actualiza según estación
+- **Botón limpiar ruta**: Restaura la vista completa del mapa
 
 ## 📈 Métricas y Análisis
 
@@ -178,12 +236,20 @@ class DijkstraPathfinder {
 ### Funcionalidades Implementadas ✅
 - ✅ Grafo dirigido ponderado con estaciones como nodos
 - ✅ Algoritmo de Dijkstra para rutas óptimas
-- ✅ Visualización gráfica de la red
+- ✅ Visualización gráfica de la red con SVG
 - ✅ Múltiples criterios de optimización
-- ✅ Simulación de eventos disruptivos
+- ✅ Simulación de eventos disruptivos (estaciones y líneas)
 - ✅ Predicción de tiempos de viaje
 - ✅ Análisis de resiliencia del sistema
 - ✅ Interfaz interactiva y responsive
+- ✅ Estaciones multimodales con soporte de múltiples líneas
+- ✅ Cierre selectivo de líneas en estaciones
+- ✅ Detección inteligente de estaciones críticas bloqueadas
+- ✅ Sugerencias de rutas alternativas contextuales
+- ✅ Animaciones fluidas y micro-interacciones
+- ✅ Estados de carga con feedback visual
+- ✅ Diseño con colores oficiales del Metro de Medellín
+- ✅ Sistema de mensajes inteligente con gradientes
 
 ### Datos Implementados
 - ✅ Todas las líneas del sistema Metro de Medellín

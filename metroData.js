@@ -1,12 +1,12 @@
 // Definición de todas las estaciones del sistema Metro de Medellín
 const STATIONS = {
     // Línea A - vertical centrada
-  'Niquía': { line: 'A', type: 'metro', x: 200, y: 0 },
-  'Bello': { line: 'A', type: 'metro', x: 200, y: 50 },
-  'Madera': { line: 'A', type: 'metro', x: 200, y: 90 },
-  'Acevedo': { lines: ['A', 'K', 'P'], type: 'metro', x: 200, y: 130 }, // Multimodal
-  'Tricentenario': { line: 'A', type: 'metro', x: 200, y: 180 },
-  'Caribe': { line: 'A', type: 'metro', x: 200, y: 240 },
+  'Niquía': { line: 'A', type: 'metro', x: 220, y: 0 },
+  'Bello': { line: 'A', type: 'metro', x: 220, y: 50 },
+  'Madera': { line: 'A', type: 'metro', x: 220, y: 90 },
+  'Acevedo': { lines: ['A', 'K', 'P'], type: 'metro', x: 220, y: 130 }, // Multimodal
+  'Tricentenario': { line: 'A', type: 'metro', x: 220, y: 180 },
+  'Caribe': { lines: ['A', 'O'], type: 'metro', x: 220, y: 220 }, // Multimodal
   'Universidad': { line: 'A', type: 'metro', x: 290, y: 240 },
   'Hospital': { lines: ['A', '1'], type: 'metro', x: 290, y: 280 }, // Multimodal
   'Prado': { line: 'A', type: 'metro', x: 290, y: 330 },
@@ -15,7 +15,7 @@ const STATIONS = {
   'Alpujarra': { line: 'A', type: 'metro', x: 290, y: 460 },
   'Exposiciones': { line: 'A', type: 'metro', x: 290, y: 490 },
   'Industriales': { lines: ['A', '1', '2'], type: 'metro', x: 290, y: 545 }, // Multimodal
-  'Poblado': { line: 'A', type: 'metro', x: 290, y: 600 },
+  'Poblado': { line: 'A', type: 'metro', x: 290, y: 590 },
   'Aguacatala': { line: 'A', type: 'metro', x: 290, y: 640 },
   'Ayurá': { line: 'A', type: 'metro', x: 290, y: 680 },
   'Envigado': { line: 'A', type: 'metro', x: 290, y: 720 },
@@ -26,20 +26,20 @@ const STATIONS = {
   // Línea B - horizontal desde San Antonio hacia el oeste
   // San Antonio ya está definida arriba como multimodal
   'Cisneros': { lines: ['B', '1'], type: 'metro', x: 250, y: 420 }, // Multimodal
-  'Suramericana': { line: 'B', type: 'metro', x: 190, y: 420 },
-  'Estadio': { line: 'B', type: 'metro', x: 138, y: 420 },
-  'Floresta': { line: 'B', type: 'metro', x: 100, y: 420 },
-  'Santa Lucía': { line: 'B', type: 'metro', x: 60, y: 420 },
+  'Suramericana': { line: 'B', type: 'metro', x: 195, y: 420 },
+  'Estadio': { line: 'B', type: 'metro', x: 145, y: 420 },
+  'Floresta': { lines: ['B', 'O'], type: 'metro', x: 108, y: 420 }, // Multimodal
+  'Santa Lucía': { line: 'B', type: 'metro', x: 70, y: 420 },
   'San Javier': { lines: ['B', 'J'], type: 'metro', x: 25, y: 420 }, // Multimodal
 
   // Línea K - cable diagonal hacia el noreste desde Acevedo
-  'Andalucía': { line: 'K', type: 'cable', x: 260, y: 140 },
-  'Popular': { line: 'K', type: 'cable', x: 300, y: 135 },
-  'Santo Domingo': { line: 'K', type: 'cable', x: 350, y: 130 },
+  'Andalucía': { line: 'K', type: 'cable', x: 270, y: 140 },
+  'Popular': { line: 'K', type: 'cable', x: 310, y: 135 },
+  'Santo Domingo': { line: 'K', type: 'cable', x: 355, y: 130 },
 
   // Línea P - cable diagonal noreste desde Acevedo
-  'SENA': { line: 'P', type: 'cable', x: 150, y: 130 },
-  'Doce de Octubre': { line: 'P', type: 'cable', x: 90, y: 130 },
+  'SENA': { line: 'P', type: 'cable', x: 170, y: 130 },
+  'Doce de Octubre': { line: 'P', type: 'cable', x: 110, y: 130 },
   'El Progreso': { line: 'P', type: 'cable', x: 40, y: 130 },
 
   // Línea J - cable diagonal desde San Javier
@@ -62,8 +62,8 @@ const STATIONS = {
   'Trece de Noviembre': { line: 'M', type: 'cable', x: 585, y: 330 },
 
   // Línea H - cable desde Oriente
-  'Las Torres': { line: 'H', type: 'cable', x: 710, y: 380 },
-  'Villa Sierra': { line: 'H', type: 'cable', x: 740, y: 380 },
+  'Las Torres': { line: 'H', type: 'cable', x: 710, y: 365 },
+  'Villa Sierra': { line: 'H', type: 'cable', x: 740, y: 365 },
 
     // Línea 1 (Bus) - Ruta verde compleja
     'Parque Aranjuez': { line: '1', type: 'bus', x: 315, y: 170 },
@@ -80,7 +80,7 @@ const STATIONS = {
     'Fátima': { line: '1', type: 'bus', x: 200, y: 545 },
     'Rosales': { line: '1', type: 'bus', x: 162, y: 545 },
     'Parque Belén': { line: '1', type: 'bus', x: 122, y: 545 },
-    'La Palma': { line: '1', type: 'bus', x: 92, y: 545 },
+    'La Palma': { lines: ['1', 'O'], type: 'bus', x: 92, y: 545 }, // Multimodal
     'Los Alpes': { line: '1', type: 'bus', x: 62, y: 545 },
     'UdeM': { line: '1', type: 'bus', x: 32, y: 545 },
 
@@ -90,7 +90,20 @@ const STATIONS = {
     'La Playa': { line: '2', type: 'bus', x: 360, y: 375 },
     'Barrio Colón': { line: '2', type: 'bus', x: 360, y: 465 },
     'Perpetuo Socorro': { line: '2', type: 'bus', x: 360, y: 500 },
-    'Barrio Colombia': { line: '2', type: 'bus', x: 325, y: 520 }
+    'Barrio Colombia': { line: '2', type: 'bus', x: 325, y: 520 },
+
+    // Línea O (Bus) - Ruta naranja desde Caribe hasta La Palma
+    'Universal': { line: 'O', type: 'bus', x: 185, y: 220 },
+    'Córdoba': { line: 'O', type: 'bus', x: 165, y: 240 },
+    'Pilarica': { line: 'O', type: 'bus', x: 145, y: 260 },
+    'Ciudadela Universitaria': { line: 'O', type: 'bus', x: 125, y: 280 },
+    'Facultad de Minas': { line: 'O', type: 'bus', x: 108, y: 310 },
+    'Los Colores': { line: 'O', type: 'bus', x: 108, y: 345 },
+    'Calasanz': { line: 'O', type: 'bus', x: 108, y: 385 },
+    'Los Pinos': { line: 'O', type: 'bus', x: 108, y: 445 },
+    'Laureles': { line: 'O', type: 'bus', x: 92, y: 465 },
+    'Santa Gema': { line: 'O', type: 'bus', x: 92, y: 485 },
+    'Villa Aburrá': { line: 'O', type: 'bus', x: 92, y: 515 }
 };
 
 // Definición de conexiones con tiempos entre estaciones
@@ -199,7 +212,22 @@ const CONNECTIONS = [
     { from: 'Buenos Aires', to: 'Miraflores', time: 132, line: 'T' },
     { from: 'Miraflores', to: 'Loyola', time: 168, line: 'T' },
     { from: 'Loyola', to: 'Alejandro Echavarría', time: 108, line: 'T' },
-    { from: 'Alejandro Echavarría', to: 'Oriente', time: 120, line: 'T' }
+    { from: 'Alejandro Echavarría', to: 'Oriente', time: 120, line: 'T' },
+
+    // Línea O (Bus) - Conexiones desde Caribe hasta La Palma
+    { from: 'Caribe', to: 'Universal', time: 150, line: 'O' }, // 2:30
+    { from: 'Universal', to: 'Córdoba', time: 105, line: 'O' }, // 1:45
+    { from: 'Córdoba', to: 'Pilarica', time: 105, line: 'O' }, // 1:45
+    { from: 'Pilarica', to: 'Ciudadela Universitaria', time: 105, line: 'O' }, // 1:45
+    { from: 'Ciudadela Universitaria', to: 'Facultad de Minas', time: 120, line: 'O' }, // 2:00
+    { from: 'Facultad de Minas', to: 'Los Colores', time: 105, line: 'O' }, // 1:45
+    { from: 'Los Colores', to: 'Calasanz', time: 105, line: 'O' }, // 1:45
+    { from: 'Calasanz', to: 'Floresta', time: 135, line: 'O' }, // 2:15
+    { from: 'Floresta', to: 'Los Pinos', time: 105, line: 'O' }, // 1:45
+    { from: 'Los Pinos', to: 'Laureles', time: 105, line: 'O' }, // 1:45
+    { from: 'Laureles', to: 'Santa Gema', time: 120, line: 'O' }, // 2:00
+    { from: 'Santa Gema', to: 'Villa Aburrá', time: 110, line: 'O' }, // ~1:50
+    { from: 'Villa Aburrá', to: 'La Palma', time: 150, line: 'O' } // 2:30
 ];
 
 
@@ -209,6 +237,7 @@ const LINE_COLORS = {
     'B': '#ff6600',
     '1': '#00cc66',
     '2': '#cc0066',
+    'O': '#ff9900', // Naranja para línea O
     'P': '#9933cc',
     'J': '#ff3366',
     'K': '#33cc99',
@@ -312,8 +341,15 @@ function splitStationName(name) {
         'Alejandro Echavarría': ['Alejandro', 'Echavarría'],
         'Pabellón del Agua': ['Pabellón', 'del Agua'],
         'La Aurora': ['La Aurora'],
-        'La Playa': ['La Playa']
-
+        'La Playa': ['La Playa'],
+        'Los Pinos': ['Los Pinos'],
+        'Santa Gema': ['Santa Gema'],
+        'Villa Aburrá': ['Villa Aburrá'],
+        'La Estrella': ['La Estrella'],
+        'El Pinal': ['El Pinal'],
+        'Las Esmeraldas': ['Las Esmeraldas'],
+        'Palos Verdes': ['Palos Verdes'],
+        'Prado (Bus)': ['Prado (Bus)'],
     };
     
     // Verificar si es un caso especial

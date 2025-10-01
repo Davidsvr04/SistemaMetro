@@ -4,6 +4,7 @@
     --color-metro-b: #ff6600;
     --color-bus-1: #00cc66;
     --color-bus-2: #cc0066;
+    --color-bus-o: #ff9900;
     --color-cable-p: #9933cc;
     --color-cable-j: #ff3366;
     --color-cable-k: #33cc99;
@@ -177,14 +178,21 @@ body {
     font-size: 1rem;
     background-color: var(--surface);
     color: var(--text-primary);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.station-select:hover {
+    border-color: var(--metro-blue-light);
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
 }
 
 .station-select:focus {
     outline: none;
     border-color: var(--metro-blue);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+    box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.2);
     background: linear-gradient(135deg, #ffffff, #f0f6ff);
+    transform: scale(1.01);
 }
 
 .calculate-btn, .disruption-btn, .clear-btn {
@@ -197,18 +205,56 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efecto de pulso sutil en el botón calcular */
+.calculate-btn {
+    animation: subtlePulse 2s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(0, 170, 68, 0.2);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(0, 170, 68, 0.4);
+    }
+}
+
+.calculate-btn::before, .disruption-btn::before, .clear-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.calculate-btn:hover::before, .disruption-btn:hover::before, .clear-btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .calculate-btn:hover, .disruption-btn:hover, .clear-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: var(--shadow-hover);
+}
+
+.calculate-btn:active, .disruption-btn:active, .clear-btn:active {
+    transform: translateY(-1px) scale(0.98);
 }
 
 .clear-btn {
@@ -272,6 +318,19 @@ body {
     border: 2px solid var(--border-color);
     position: relative;
     overflow: hidden;
+    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scaleY(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+    }
 }
 
 .route-results::before {
@@ -318,6 +377,31 @@ body {
     border-radius: 0.5rem;
     border-left: 3px solid var(--metro-green);
     border: 1px solid var(--border-color);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.route-step::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--metro-green);
+    transition: width 0.3s;
+}
+
+.route-step:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 170, 68, 0.2);
+    border-color: var(--metro-green);
+}
+
+.route-step:hover::before {
+    width: 100%;
+    opacity: 0.1;
 }
 
 .route-step i {
@@ -338,6 +422,30 @@ body {
     text-align: center;
     border: 2px solid var(--metro-yellow);
     box-shadow: var(--shadow);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 204, 0, 0.3);
+    border-color: var(--metro-orange);
+}
+
+.stat-card:hover::before {
+    left: 100%;
 }
 
 .stat-card h4 {
@@ -418,6 +526,7 @@ body {
         var(--color-tranvia-t),
         var(--color-bus-1), 
         var(--color-bus-2),
+        var(--color-bus-o),
         var(--color-cable-p),
         var(--color-cable-j),
         var(--color-cable-k),
@@ -451,12 +560,36 @@ body {
     border-radius: 0.75rem;
     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
     border: 2px solid var(--border-color);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+/* Retraso escalonado para animación de entrada */
+.legend-item:nth-child(2) { animation-delay: 0.05s; }
+.legend-item:nth-child(3) { animation-delay: 0.1s; }
+.legend-item:nth-child(4) { animation-delay: 0.15s; }
+.legend-item:nth-child(5) { animation-delay: 0.2s; }
+.legend-item:nth-child(6) { animation-delay: 0.25s; }
+.legend-item:nth-child(7) { animation-delay: 0.3s; }
+.legend-item:nth-child(8) { animation-delay: 0.35s; }
+.legend-item:nth-child(9) { animation-delay: 0.4s; }
+.legend-item:nth-child(10) { animation-delay: 0.45s; }
+.legend-item:nth-child(11) { animation-delay: 0.5s; }
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .legend-item:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: var(--shadow-hover);
     border-color: var(--metro-blue);
 }
@@ -511,27 +644,32 @@ body {
 .legend-item.metro-line:hover {
     background: linear-gradient(135deg, #e6f0ff, #ccddff);
     border-color: var(--metro-blue);
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.25);
 }
 
 .legend-item.bus-line:hover {
     background: linear-gradient(135deg, #e6ffe6, #ccffcc);
     border-color: var(--metro-green);
+    box-shadow: 0 8px 25px rgba(0, 170, 68, 0.25);
 }
 
 .legend-item.cable-line:hover {
     background: linear-gradient(135deg, #f0e6ff, #e0ccff);
     border-color: var(--metro-purple);
+    box-shadow: 0 8px 25px rgba(102, 51, 204, 0.25);
 }
 
 .legend-item.tranvia-line:hover {
     background: linear-gradient(135deg, #e6f0ff, #cce6ff);
     border-color: var(--color-tranvia-t);
+    box-shadow: 0 8px 25px rgba(102, 153, 255, 0.25);
 }
 
 .linea-a { background-color: var(--color-metro-a); }
 .linea-b { background-color: var(--color-metro-b); }
 .linea-1 { background-color: var(--color-bus-1); }
 .linea-2 { background-color: var(--color-bus-2); }
+.linea-o { background-color: var(--color-bus-o); }
 .linea-p { background-color: var(--color-cable-p); }
 .linea-j { background-color: var(--color-cable-j); }
 .linea-k { background-color: var(--color-cable-k); }
@@ -551,11 +689,13 @@ body {
 /* Estilos para el grafo SVG */
 .station-node {
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .station-node:hover {
-    transform: scale(1.1);
+    transform: scale(1.3);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 .station-node.origin {
@@ -598,13 +738,14 @@ body {
 .connection-line {
     stroke-width: 2;
     opacity: 0.8;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .connection-line.path {
-    stroke-width: 4;
+    stroke-width: 5;
     opacity: 1;
     animation: pathPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px currentColor);
 }
 
 /* Conexiones grises cuando hay una ruta activa */
@@ -638,6 +779,80 @@ body {
     stroke-dasharray: 5,5;
 }
 
+/* Loader animado */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Mejora del header con parallax sutil */
+.header {
+    background: linear-gradient(135deg, var(--metro-blue-dark), var(--metro-blue), var(--metro-blue-light));
+    color: white;
+    padding: 2rem 0;
+    box-shadow: var(--shadow-hover);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        var(--metro-green),
+        var(--metro-blue),
+        var(--metro-orange),
+        var(--metro-yellow),
+        var(--metro-purple)
+    );
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Scroll suave para toda la página */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Mejora de accesibilidad */
+*:focus-visible {
+    outline: 3px solid var(--metro-blue);
+    outline-offset: 2px;
+}
+
+/* Animación de entrada para los paneles */
+.route-selector, .disruptions-panel, .network-visualization, .legend {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .main-content {
@@ -647,6 +862,10 @@ body {
     
     .header-content h1 {
         font-size: 2rem;
+    }
+    
+    .header-content p {
+        font-size: 1rem;
     }
     
     .legend {
@@ -669,7 +888,15 @@ body {
     }
     
     .route-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .network-graph {
+        max-height: 600px;
+    }
+    
+    #metroSvg {
+        height: 600px;
     }
 }
 
@@ -683,10 +910,111 @@ body {
     }
     
     .header-content p {
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .header-content i {
+        font-size: 2rem;
     }
     
     .route-selector, .disruptions-panel {
         padding: 1rem;
     }
+    
+    .legend {
+        padding: 1rem;
+    }
+    
+    .legend h3 {
+        font-size: 1rem;
+        flex-direction: column;
+    }
+    
+    .legend-items {
+        grid-template-columns: 1fr;
+    }
+    
+    .route-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-card .value {
+        font-size: 1.2rem;
+    }
+    
+    .disruption-buttons {
+        flex-direction: column;
+    }
+    
+    .disruption-buttons .disruption-btn {
+        width: 100%;
+    }
+}
+
+/* Mensajes de la aplicación */
+.app-message {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    max-width: 90%;
+    font-size: 1rem;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.app-message-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+    color: white;
+    border: 2px solid #fca5a5;
+}
+
+.app-message-success {
+    background: linear-gradient(135deg, rgba(0, 170, 68, 0.95), rgba(0, 150, 60, 0.95));
+    color: white;
+    border: 2px solid #86efac;
+}
+
+.app-message-info {
+    background: linear-gradient(135deg, rgba(0, 102, 204, 0.95), rgba(0, 61, 122, 0.95));
+    color: white;
+    border: 2px solid #93c5fd;
+}
+
+.app-message-loading {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.95));
+    color: white;
+    border: 2px solid #c7d2fe;
+}
+
+.app-message i {
+    font-size: 1.5rem;
+}
+
+/* Animación especial para el spinner */
+.fa-spinner {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
